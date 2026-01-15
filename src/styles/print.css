@@ -1,0 +1,146 @@
+/**
+ * Print styles for PDF export
+ * Import this file in your global CSS:
+ * @import 'fumadocs-pdf-export/styles/print.css';
+ */
+
+@media print {
+  /* Continuous page - no page breaks */
+  @page {
+    size: auto;
+    margin: 0.5in;
+  }
+
+  html,
+  body {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  * {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* ================================================
+   * Fumadocs-specific selectors
+   * ================================================ */
+  #nd-docs-layout {
+    --fd-sidebar-width: 0px !important;
+  }
+
+  #nd-sidebar,
+  #nd-toc,
+  nav,
+  .print-hidden {
+    display: none !important;
+  }
+
+  /* ================================================
+   * Docusaurus-specific selectors
+   * ================================================ */
+  .theme-doc-sidebar-container,
+  .table-of-contents,
+  .pagination-nav {
+    display: none !important;
+  }
+
+  /* ================================================
+   * Nextra-specific selectors
+   * ================================================ */
+  .nextra-sidebar,
+  .nextra-toc,
+  .nextra-breadcrumb {
+    display: none !important;
+  }
+
+  /* ================================================
+   * Common layout fixes
+   * ================================================ */
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  article {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* ================================================
+   * Accordion/Collapsible handling
+   * ================================================ */
+
+  /* Radix UI accordions (Fumadocs, Nextra) */
+  [data-state='closed'] > [data-radix-collapsible-content],
+  [data-state='closed'] > [data-radix-accordion-content] {
+    display: block !important;
+    height: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  [data-radix-accordion-content],
+  [data-radix-collapsible-content] {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Docusaurus collapsibles */
+  .collapsible-content {
+    display: block !important;
+    height: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  /* ================================================
+   * Tab handling - show all tab content
+   * ================================================ */
+
+  /* Force all tab panels visible */
+  [role='tabpanel'][data-state='inactive'],
+  [role='tabpanel'][hidden] {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  /* Hide tab list since all content is shown */
+  [role='tablist'] {
+    display: none !important;
+  }
+
+  /* ================================================
+   * Code block handling
+   * ================================================ */
+
+  pre {
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* ================================================
+   * Image handling
+   * ================================================ */
+
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* ================================================
+   * Link handling - show URLs in print
+   * ================================================ */
+
+  /* Uncomment to show URLs after links in print */
+  /*
+  a[href^="http"]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #666;
+  }
+  */
+}
