@@ -13,12 +13,20 @@ PDF export plugin for documentation sites. Works with Fumadocs, Docusaurus, Next
 
 ## Installation
 
+Install from npm:
+
 ```bash
 npm install fumadocs-pdf-export puppeteer
 # or
 pnpm add fumadocs-pdf-export puppeteer
 # or
 yarn add fumadocs-pdf-export puppeteer
+```
+
+Or install from GitHub:
+
+```bash
+pnpm add github:sebastianhuus/fumadocs-pdf-export puppeteer
 ```
 
 > **Note:** Puppeteer is a peer dependency and must be installed separately. It will download Chromium (~300MB) on install.

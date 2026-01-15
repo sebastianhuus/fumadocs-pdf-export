@@ -2,6 +2,13 @@
   "name": "fumadocs-pdf-export",
   "version": "0.1.0",
   "description": "PDF export plugin for Fumadocs documentation sites",
+  "homepage": "https://github.com/sebastianhuus/fumadocs-pdf-export",
+  "license": "MIT",
+  "author": "Sebastian Huus",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sebastianhuus/fumadocs-pdf-export"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -34,8 +41,6 @@
     "print",
     "next.js"
   ],
-  "author": "",
-  "license": "MIT",
   "peerDependencies": {
     "next": ">=14.0.0",
     "react": ">=18.0.0",
