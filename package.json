@@ -39,16 +39,15 @@
   "peerDependencies": {
     "next": ">=14.0.0",
     "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react-dom": ">=18.0.0",
+    "puppeteer": ">=22.0.0"
   },
-  "dependencies": {
-    "puppeteer": "^24.0.0",
-    "puppeteer-core": "^24.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "puppeteer": "^24.0.0",
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
