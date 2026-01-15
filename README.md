@@ -14,14 +14,14 @@ PDF export plugin for documentation sites. Works with Fumadocs, Docusaurus, Next
 ## Installation
 
 ```bash
-npm install fumadocs-pdf-export
+npm install fumadocs-pdf-export puppeteer
 # or
-pnpm add fumadocs-pdf-export
+pnpm add fumadocs-pdf-export puppeteer
 # or
-yarn add fumadocs-pdf-export
+yarn add fumadocs-pdf-export puppeteer
 ```
 
-> **Note:** This package includes Puppeteer as a dependency, which downloads Chromium (~300MB) on install.
+> **Note:** Puppeteer is a peer dependency and must be installed separately. It will download Chromium (~300MB) on install.
 
 ## Quick Start (Fumadocs)
 
@@ -57,6 +57,19 @@ export default function Page() {
     </DocsPage>
   );
 }
+```
+
+### 4. Configure Next.js (required for pnpm)
+
+If using pnpm, add this to your `next.config.js` to prevent Turbopack warnings:
+
+```js
+// next.config.js
+const nextConfig = {
+  serverExternalPackages: ['puppeteer'],
+};
+
+module.exports = nextConfig;
 ```
 
 ## Configuration
@@ -227,6 +240,19 @@ export const GET = createPdfExportHandler({
 1. Ensure `contentSelector` matches your content container
 2. Check that lazy images are loading (increase timeout if needed)
 3. Verify accordions are being expanded
+
+### pnpm warnings about puppeteer
+
+If you see "Package puppeteer can't be external" warnings with pnpm:
+
+1. Ensure puppeteer is installed as a direct dependency (not just via fumadocs-pdf-export)
+2. Add `serverExternalPackages: ['puppeteer']` to your `next.config.js` (see Quick Start step 4)
+3. If using `pnpm-workspace.yaml`, add puppeteer to `onlyBuiltDependencies`:
+
+```yaml
+onlyBuiltDependencies:
+  - puppeteer
+```
 
 ### Authentication issues
 
