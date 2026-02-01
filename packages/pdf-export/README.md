@@ -51,21 +51,70 @@ export const GET = createPdfExportHandler();
 
 ### 3. Add the export button
 
+#### Basic Usage (Standalone Button)
+
 ```tsx
 // app/docs/[[...slug]]/page.tsx
-import { FumadocsExportButton } from 'fumadocs-pdf-export';
+import { FumadocsExportButton } from 'fumadocs-pdf-export/components';
 
-export default function Page() {
+export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
+  const params = await props.params;
+  const page = source.getPage(params.slug);
+
   return (
-    <DocsPage>
+    <DocsPage toc={page.data.toc}>
+      <DocsTitle>{page.data.title}</DocsTitle>
+      <DocsDescription>{page.data.description}</DocsDescription>
+
       <div className="flex justify-end print-hidden">
         <FumadocsExportButton />
       </div>
-      {/* ... rest of your page */}
+
+      <DocsBody>
+        <MDX components={getMDXComponents()} />
+      </DocsBody>
     </DocsPage>
   );
 }
 ```
+
+#### Recommended: Integrated Action Bar
+
+For a more cohesive UI, integrate the PDF export button with other page actions:
+
+```tsx
+// app/docs/[[...slug]]/page.tsx
+import { FumadocsExportButton } from 'fumadocs-pdf-export/components';
+import { LLMCopyButton, ViewOptions } from '@/components/ai/page-actions';
+
+export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
+  const params = await props.params;
+  const page = source.getPage(params.slug);
+
+  return (
+    <DocsPage toc={page.data.toc}>
+      <DocsTitle>{page.data.title}</DocsTitle>
+      <DocsDescription className="mb-0">{page.data.description}</DocsDescription>
+
+      {/* Integrated action bar with all page actions */}
+      <div className="flex flex-row gap-2 items-center border-b pb-6">
+        <FumadocsExportButton />
+        <LLMCopyButton markdownUrl={`${page.url}.mdx`} />
+        <ViewOptions
+          markdownUrl={`${page.url}.mdx`}
+          githubUrl={`https://github.com/user/repo/blob/main/content/docs/${page.path}`}
+        />
+      </div>
+
+      <DocsBody>
+        <MDX components={getMDXComponents()} />
+      </DocsBody>
+    </DocsPage>
+  );
+}
+```
+
+This creates a unified action bar where all page actions are grouped together with consistent spacing and styling.
 
 ### 4. Configure Next.js (required for pnpm)
 
@@ -136,12 +185,40 @@ export const GET = createPdfExportHandler({
 
 ## Components
 
-### ExportButton
+### FumadocsExportButton
 
-Unstyled button component for custom styling:
+Pre-styled button that matches Fumadocs design system with consistent sizing and colors:
 
 ```tsx
-import { ExportButton } from 'fumadocs-pdf-export';
+import { FumadocsExportButton } from 'fumadocs-pdf-export/components';
+
+<FumadocsExportButton
+  onExportSuccess={() => toast.success('PDF downloaded!')}
+/>
+```
+
+**Styling details:**
+- Uses Fumadocs `buttonVariants` with `color: 'secondary'` and `size: 'sm'`
+- Includes printer icon (normal state) and spinning loader (loading state)
+- Matches the styling of other Fumadocs UI components
+- Shows "Export PDF" text with "Generating..." during export
+
+**Integration tip:** Place it alongside other action buttons (like `LLMCopyButton`, `ViewOptions`) in a unified action bar:
+
+```tsx
+<div className="flex flex-row gap-2 items-center border-b pb-6">
+  <FumadocsExportButton />
+  <LLMCopyButton markdownUrl={`${page.url}.mdx`} />
+  <ViewOptions markdownUrl={`${page.url}.mdx`} githubUrl="..." />
+</div>
+```
+
+### ExportButton
+
+Unstyled base button component for complete custom styling:
+
+```tsx
+import { ExportButton } from 'fumadocs-pdf-export/components';
 
 <ExportButton
   apiPath="/api/export-pdf"
@@ -156,17 +233,7 @@ import { ExportButton } from 'fumadocs-pdf-export';
 </ExportButton>
 ```
 
-### FumadocsExportButton
-
-Pre-styled button that matches Fumadocs design:
-
-```tsx
-import { FumadocsExportButton } from 'fumadocs-pdf-export';
-
-<FumadocsExportButton
-  onExportSuccess={() => toast.success('PDF downloaded!')}
-/>
-```
+Use this when you need full control over styling or want to match a custom design system.
 
 ## API Reference
 
