@@ -1,0 +1,223 @@
+---
+title: Getting Started
+description: Complete installation and setup guide for adding PDF export to your Fumadocs site.
+---
+
+## Installation
+
+Install the package and its peer dependency using your preferred package manager:
+
+```bash
+npm install fumadocs-pdf-export puppeteer
+```
+
+```bash
+pnpm add fumadocs-pdf-export puppeteer
+```
+
+```bash
+yarn add fumadocs-pdf-export puppeteer
+```
+
+> **Note**: Puppeteer will download Chromium (~300MB) during installation. This is required for PDF generation.
+
+## Setup
+
+### Step 1: Create the API Route
+
+Create a new file at `app/api/export-pdf/route.ts`:
+
+```typescript
+import { createPdfExportHandler } from 'fumadocs-pdf-export';
+
+export const GET = createPdfExportHandler('fumadocs');
+```
+
+This creates a Next.js API route that handles PDF generation requests. The `'fumadocs'` parameter uses the pre-configured Fumadocs preset with optimized selectors.
+
+### Step 2: Import Print Styles
+
+Add the print styles to your global CSS file:
+
+```css
+/* app/global.css */
+@import 'fumadocs-pdf-export/styles/print.css';
+```
+
+These styles ensure proper rendering in the PDF output by:
+
+- Hiding navigation elements
+- Expanding accordions and collapsibles
+- Preventing page breaks
+- Optimizing code blocks for printing
+
+### Step 3: Add the Export Button
+
+Import and use the `FumadocsExportButton` component in your documentation pages:
+
+```tsx
+// app/docs/[[...slug]]/page.tsx
+import { FumadocsExportButton } from 'fumadocs-pdf-export/components';
+
+export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
+  const params = await props.params;
+  const page = source.getPage(params.slug);
+
+  return (
+    <DocsPage toc={page.data.toc}>
+      <DocsTitle>{page.data.title}</DocsTitle>
+      <DocsDescription>{page.data.description}</DocsDescription>
+
+      <div className="flex gap-2 border-b pb-6">
+        <FumadocsExportButton />
+      </div>
+
+      {/* Rest of your page content */}
+    </DocsPage>
+  );
+}
+```
+
+### Step 4: Configure Next.js (pnpm only)
+
+If you're using pnpm, add this to your `next.config.js`:
+
+```javascript
+const nextConfig = {
+  serverExternalPackages: ['puppeteer'],
+};
+
+module.exports = nextConfig;
+```
+
+This prevents Turbopack warnings when bundling Puppeteer.
+
+## Customization
+
+### Using Different Presets
+
+The plugin includes presets for popular documentation frameworks:
+
+```typescript
+// Fumadocs (default)
+export const GET = createPdfExportHandler('fumadocs');
+
+// Docusaurus
+export const GET = createPdfExportHandler('docusaurus');
+
+// Nextra
+export const GET = createPdfExportHandler('nextra');
+```
+
+### Custom Configuration
+
+For advanced use cases, you can provide custom options:
+
+```typescript
+import { createPdfExportHandler } from 'fumadocs-pdf-export';
+
+export const GET = createPdfExportHandler({
+  // Main content selector
+  contentSelector: 'article',
+
+  // Elements to remove from PDF
+  removeSelectors: [
+    '#sidebar',
+    '.toc',
+    'nav',
+    '.print-hidden',
+  ],
+
+  // Accordion handling
+  expandAccordions: true,
+  accordionTriggerSelectors: ['button[data-state="closed"]'],
+
+  // Image handling
+  triggerLazyImages: true,
+
+  // PDF dimensions
+  pageWidth: 850,
+  margins: { top: 30, right: 30, bottom: 30, left: 30 },
+
+  // Browser options
+  timeout: 30000,
+  puppeteerOptions: {
+    headless: true,
+  },
+
+  // Custom transformations (runs in browser context)
+  beforePdfGeneration: `
+    // Remove specific elements
+    document.querySelectorAll('.ad-banner').forEach(el => el.remove());
+
+    // Add custom styles
+    document.body.style.fontSize = '14px';
+  `,
+});
+```
+
+## Custom Export Button
+
+If you need more control over the button styling or behavior, use the base `ExportButton` component:
+
+```tsx
+import { ExportButton } from 'fumadocs-pdf-export/components';
+
+<ExportButton
+  apiPath="/api/export-pdf"
+  className="custom-button-styles"
+  filename="my-custom-filename"
+  onExportStart={() => console.log('Starting export...')}
+  onExportSuccess={() => console.log('Export completed!')}
+  onExportError={(error) => console.error('Export failed:', error)}
+>
+  <DownloadIcon />
+  Download as PDF
+</ExportButton>
+```
+
+## Troubleshooting
+
+### Puppeteer fails to launch
+
+On Linux servers, you may need to install additional dependencies:
+
+```bash
+apt-get install -y chromium-browser
+```
+
+Or use an existing Chrome installation:
+
+```typescript
+export const GET = createPdfExportHandler({
+  puppeteerOptions: {
+    executablePath: '/usr/bin/chromium-browser',
+  },
+});
+```
+
+### PDF is blank or incomplete
+
+1. Verify the `contentSelector` matches your content container
+2. Increase the timeout if lazy images are slow to load
+3. Check browser console for JavaScript errors
+4. Ensure print styles are imported in your global CSS
+
+### Authentication issues
+
+The handler automatically forwards cookies. For complex auth scenarios:
+
+1. Ensure cookies are set on the same domain
+2. Check for `__Host-` or `__Secure-` prefixed cookies
+3. Test the API route directly to debug cookie forwarding
+
+## Next Steps
+
+Now that you have PDF export set up, check out the [Advanced Guide](/docs/advanced-guide) to see how different content types are rendered in PDFs.
+
+You can also:
+
+- Customize the PDF styling with your own print CSS
+- Add metadata to generated PDFs
+- Integrate with your CI/CD pipeline for automated PDF generation
+- Create custom export buttons for different export formats

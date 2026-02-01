@@ -336,10 +336,20 @@ async function cleanupPageForPdf(
         background: white;
       `;
 
-      // Remove navigation elements
-      contentClone.querySelectorAll('[class*="grid-cols-2"]').forEach((el) => el.remove());
+      // Remove navigation elements (prev/next article buttons)
+      // Remove both grid-cols-1 and grid-cols-2 (single or dual navigation)
+      contentClone.querySelectorAll('[class*="grid-cols-1"], [class*="grid-cols-2"]').forEach((el) => {
+        if (el.classList.contains('grid') && el.closest('[class*="@container"]')) {
+          el.remove();
+        }
+      });
+
+      // Also remove @container elements that look like navigation
       contentClone.querySelectorAll('[class*="@container"]').forEach((el) => {
-        if (el.querySelector('[class*="grid-cols-2"]') || el.querySelectorAll('a').length === 2) {
+        const links = el.querySelectorAll('a');
+        const hasNavigation = links.length === 1 || links.length === 2;
+        const hasChevron = el.querySelector('[class*="chevron"]');
+        if (hasNavigation || hasChevron) {
           el.remove();
         }
       });

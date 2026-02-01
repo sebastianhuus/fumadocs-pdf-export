@@ -1,0 +1,60 @@
+---
+title: PDF Export for Fumadocs
+description: Export your documentation pages to beautiful, print-ready PDFs with a single click.
+---
+
+## Welcome to fumadocs-pdf-export
+
+This demo showcases the **fumadocs-pdf-export** plugin - a powerful tool that enables PDF export functionality for your Fumadocs documentation sites.
+
+### Key Features
+
+- **Single-Page Export**: Generates PDFs without page breaks, keeping all content on a continuous page
+- **Smart Content Handling**: Automatically expands accordions and loads lazy images
+- **Framework Agnostic**: Works with Fumadocs, Docusaurus, Nextra, and other frameworks
+- **Cookie Forwarding**: Supports authenticated pages
+- **Customizable**: Flexible selectors and configuration options
+
+### Quick Start
+
+Try it now! Click the **Export PDF** button at the top of this page to see it in action.
+
+The plugin seamlessly integrates with your existing Fumadocs setup in just a few steps:
+
+1. Install the package
+2. Create an API route
+3. Add the export button component
+4. Import print styles
+
+### Use Cases
+
+Perfect for:
+
+- Creating offline documentation
+- Generating printable user guides
+- Archiving documentation versions
+- Sharing docs with stakeholders who prefer PDFs
+- Accessibility (some users prefer reading PDFs)
+
+### Demo Content
+
+This demo site includes several pages showcasing different content types and layouts. Try exporting each page to see how the plugin handles various scenarios:
+
+- **Getting Started**: Installation and setup guide with code examples
+- **Advanced Guide**: Long-form content with tables, code blocks, callouts, and more
+
+All pages are optimized for PDF export with clean formatting and proper content extraction.
+
+### Technical Details
+
+The plugin uses Puppeteer to render your documentation in a headless browser, ensuring pixel-perfect accuracy. It intelligently:
+
+- Removes navigation and UI elements
+- Expands all collapsible content
+- Waits for lazy-loaded images
+- Applies print-optimized styles
+- Calculates dynamic page height
+
+### Get Started
+
+Ready to add PDF export to your documentation? Check out the [Getting Started](/docs/getting-started) guide to learn how to integrate this plugin into your project.

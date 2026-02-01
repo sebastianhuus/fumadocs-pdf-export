@@ -1,0 +1,312 @@
+---
+title: Advanced Guide
+description: A comprehensive guide showcasing all content types and advanced features of the PDF export plugin.
+---
+
+## Introduction to Advanced Features
+
+This page demonstrates how the PDF export plugin handles various content types, layouts, and interactive elements. Export this page to see how everything renders in the final PDF output.
+
+## Typography and Formatting
+
+### Headings Hierarchy
+
+The plugin preserves your heading structure in the PDF output:
+
+#### Level 4 Heading
+##### Level 5 Heading
+###### Level 6 Heading
+
+### Text Formatting
+
+You can use **bold text**, *italic text*, ***bold and italic***, ~~strikethrough~~, and `inline code` in your documentation. All formatting is preserved in the PDF export.
+
+### Blockquotes
+
+> This is a blockquote. It can contain multiple lines of text and is useful for highlighting important information or quotes from other sources.
+>
+> Blockquotes can also span multiple paragraphs.
+
+## Code Examples
+
+### Inline Code
+
+Use inline code like `const foo = 'bar'` within your paragraphs.
+
+### Code Blocks
+
+JavaScript example with syntax highlighting:
+
+```javascript
+import { createPdfExportHandler } from 'fumadocs-pdf-export';
+
+// Create the API route handler
+export const GET = createPdfExportHandler({
+  contentSelector: 'article',
+  removeSelectors: ['#sidebar', '.toc'],
+  expandAccordions: true,
+  triggerLazyImages: true,
+  pageWidth: 850,
+  margins: { top: 30, right: 30, bottom: 30, left: 30 },
+});
+```
+
+TypeScript with type annotations:
+
+```typescript
+interface PdfExportOptions {
+  contentSelector?: string;
+  removeSelectors?: string[];
+  expandAccordions?: boolean;
+  accordionTriggerSelectors?: string[];
+  accordionContentSelectors?: string[];
+  triggerLazyImages?: boolean;
+  pageWidth?: number;
+  margins?: {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  };
+  timeout?: number;
+  puppeteerOptions?: LaunchOptions;
+  beforePdfGeneration?: string;
+}
+```
+
+Python example:
+
+```python
+def generate_pdf(content, options):
+    """
+    Generate a PDF from the provided content.
+
+    Args:
+        content (str): The HTML content to convert
+        options (dict): Configuration options
+
+    Returns:
+        bytes: The generated PDF as bytes
+    """
+    pdf_generator = PDFGenerator(options)
+    return pdf_generator.create(content)
+```
+
+Bash commands:
+
+```bash
+# Install the package
+pnpm add fumadocs-pdf-export puppeteer
+
+# Build your documentation
+pnpm build
+
+# Start the development server
+pnpm dev
+```
+
+## Lists
+
+### Unordered Lists
+
+- First item with some explanatory text
+- Second item with a nested list:
+  - Nested item 1
+  - Nested item 2
+    - Deeply nested item
+- Third item
+- Fourth item
+
+### Ordered Lists
+
+1. First step in the process
+2. Second step with details:
+   1. Sub-step A
+   2. Sub-step B
+   3. Sub-step C
+3. Third step
+4. Final step
+
+### Task Lists
+
+- [x] Completed task
+- [x] Another completed task
+- [ ] Pending task
+- [ ] Another pending task with more details
+
+## Tables
+
+### Basic Table
+
+| Feature | Description | Supported |
+|---------|-------------|-----------|
+| Single-page PDFs | Export without page breaks | ✅ |
+| Accordion expansion | Auto-expand collapsibles | ✅ |
+| Lazy images | Load images before export | ✅ |
+| Cookie forwarding | Support authenticated pages | ✅ |
+| Custom selectors | Framework-specific configs | ✅ |
+
+### Complex Table
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `contentSelector` | `string` | `'article'` | CSS selector for the main content area to export |
+| `removeSelectors` | `string[]` | `['#nd-sidebar', '#nd-toc']` | Array of selectors for elements to remove before PDF generation |
+| `expandAccordions` | `boolean` | `true` | Whether to automatically expand all accordion/collapsible components |
+| `triggerLazyImages` | `boolean` | `true` | Whether to scroll through the page to trigger lazy-loaded images |
+| `pageWidth` | `number` | `850` | Width of the PDF page in pixels |
+| `timeout` | `number` | `30000` | Maximum time to wait for page load in milliseconds |
+
+### Alignment Table
+
+| Left Aligned | Center Aligned | Right Aligned |
+|:-------------|:--------------:|--------------:|
+| Text         | Text           | Text          |
+| More text    | More text      | More text     |
+| Even more    | Even more      | Even more     |
+
+## Links
+
+The plugin handles various types of links:
+
+- [External link](https://fumadocs.dev) to fumadocs.dev
+- [Internal link](/docs/getting-started) to another page
+- [Anchor link](#introduction-to-advanced-features) to a section on this page
+- Automatic URL: https://github.com/sebastianhuus/fumadocs-pdf-export
+
+## Horizontal Rules
+
+Use horizontal rules to separate sections:
+
+---
+
+Content above the line.
+
+---
+
+Content below the line.
+
+## Advanced Layouts
+
+### Multi-Column Information
+
+The PDF export maintains your content structure. Here's a list of framework presets:
+
+**Fumadocs**
+- Removes `#nd-sidebar` and `#nd-toc`
+- Targets Radix UI accordions
+- Optimized for Fumadocs layout
+
+**Docusaurus**
+- Removes `.theme-doc-sidebar-container`
+- Handles Docusaurus collapsibles
+- Works with Docusaurus themes
+
+**Nextra**
+- Removes `.nextra-sidebar` and `.nextra-toc`
+- Supports Nextra accordions
+- Compatible with Nextra layouts
+
+## Best Practices
+
+### Content Organization
+
+1. **Structure your content hierarchically**: Use proper heading levels (H1 → H2 → H3) to create a logical document structure
+2. **Keep sections focused**: Each section should cover one main topic or concept
+3. **Use visual hierarchy**: Leverage headings, lists, and spacing to guide readers
+4. **Include code examples**: Demonstrate concepts with practical examples
+5. **Add tables for reference**: Use tables to present structured data
+
+### PDF Optimization
+
+1. **Test your exports**: Always preview generated PDFs to ensure formatting is correct
+2. **Use print-friendly styles**: Avoid elements that don't work well in print (animations, videos)
+3. **Consider page width**: Default 850px works well for most content, but adjust as needed
+4. **Optimize images**: Use appropriately sized images to keep file sizes reasonable
+5. **Handle authentication**: For protected docs, ensure cookie forwarding is working
+
+### Performance Tips
+
+1. **Lazy load images wisely**: The plugin scrolls to trigger lazy images, so use lazy loading strategically
+2. **Minimize external resources**: Reduce dependencies on external stylesheets or scripts
+3. **Cache appropriately**: Consider implementing client-side caching for frequent exports
+4. **Monitor timeouts**: Increase timeout values for large or complex pages
+5. **Test in production**: Verify Puppeteer works in your deployment environment
+
+## Technical Implementation
+
+### How It Works
+
+The PDF export process follows these steps:
+
+1. **Request initiated**: User clicks the export button
+2. **API route called**: Browser sends request to `/api/export-pdf?path=/docs/page`
+3. **Puppeteer launches**: Server starts a headless Chrome instance
+4. **Page navigation**: Puppeteer navigates to the specified page URL
+5. **Cookie forwarding**: Request cookies are forwarded to the browser
+6. **Accordion expansion**: Plugin clicks accordion triggers (up to 5 iterations)
+7. **Image loading**: Plugin scrolls through page to trigger lazy images
+8. **Content extraction**: Main content is extracted using `contentSelector`
+9. **DOM cleanup**: Navigation, sidebars, and UI elements are removed
+10. **Custom transformations**: Any `beforePdfGeneration` code is executed
+11. **Height calculation**: Plugin calculates total content height
+12. **PDF generation**: Chrome generates PDF with calculated dimensions
+13. **Response**: PDF is streamed back to the client
+14. **Download**: Browser triggers file download
+
+### Architecture
+
+```
+┌─────────────┐
+│   Browser   │
+│  (Client)   │
+└──────┬──────┘
+       │
+       │ HTTP GET /api/export-pdf?path=/docs/page
+       │
+       ▼
+┌─────────────────────┐
+│   Next.js Server    │
+│                     │
+│  ┌───────────────┐  │
+│  │ Route Handler │  │
+│  └───────┬───────┘  │
+│          │          │
+│          ▼          │
+│  ┌───────────────┐  │
+│  │  Puppeteer    │  │
+│  │  (Chrome)     │  │
+│  └───────┬───────┘  │
+│          │          │
+│          ▼          │
+│  ┌───────────────┐  │
+│  │ PDF Generator │  │
+│  └───────┬───────┘  │
+└──────────┼──────────┘
+           │
+           │ Binary PDF data
+           │
+           ▼
+     ┌──────────┐
+     │   User   │
+     │ Download │
+     └──────────┘
+```
+
+## Conclusion
+
+The fumadocs-pdf-export plugin is a powerful tool for adding PDF export functionality to your documentation. It handles complex layouts, interactive elements, and various content types automatically.
+
+Key takeaways:
+
+- Easy integration with just a few lines of code
+- Automatic handling of accordions, lazy images, and authentication
+- Customizable configuration for different frameworks and use cases
+- Production-ready with proper error handling and timeouts
+- Clean PDF output with print-optimized styles
+
+For more information, visit the [GitHub repository](https://github.com/sebastianhuus/fumadocs-pdf-export) or check out the [Getting Started](/docs/getting-started) guide.
+
+---
+
+**Ready to try it?** Click the "Export PDF" button at the top of this page to see this comprehensive guide as a beautifully formatted PDF!
