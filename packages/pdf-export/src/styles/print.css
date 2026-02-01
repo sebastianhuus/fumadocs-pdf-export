@@ -17,9 +17,28 @@
     overflow: visible !important;
   }
 
-  * {
+  /* Only prevent breaks on specific elements, not everything */
+  h1, h2, h3, h4, h5, h6,
+  pre, code,
+  img,
+  blockquote {
     page-break-inside: avoid;
     break-inside: avoid;
+  }
+
+  /* Remove excessive margins in print */
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: 1em !important;
+    margin-bottom: 0.5em !important;
+  }
+
+  h1:first-child {
+    margin-top: 0 !important;
+  }
+
+  p {
+    margin-top: 0.5em !important;
+    margin-bottom: 0.5em !important;
   }
 
   /* ================================================

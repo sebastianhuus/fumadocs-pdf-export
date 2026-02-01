@@ -97,7 +97,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
       <DocsDescription className="mb-0">{page.data.description}</DocsDescription>
 
       {/* Integrated action bar with all page actions */}
-      <div className="flex flex-row gap-2 items-center border-b pb-6">
+      <div className="flex flex-row gap-2 items-center border-b pb-6 print-hidden">
         <FumadocsExportButton />
         <LLMCopyButton markdownUrl={`${page.url}.mdx`} />
         <ViewOptions
@@ -206,12 +206,14 @@ import { FumadocsExportButton } from 'fumadocs-pdf-export/components';
 **Integration tip:** Place it alongside other action buttons (like `LLMCopyButton`, `ViewOptions`) in a unified action bar:
 
 ```tsx
-<div className="flex flex-row gap-2 items-center border-b pb-6">
+<div className="flex flex-row gap-2 items-center border-b pb-6 print-hidden">
   <FumadocsExportButton />
   <LLMCopyButton markdownUrl={`${page.url}.mdx`} />
   <ViewOptions markdownUrl={`${page.url}.mdx`} githubUrl="..." />
 </div>
 ```
+
+**Important:** Always add `print-hidden` class to the action bar to prevent it from appearing in the PDF export.
 
 ### ExportButton
 
