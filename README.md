@@ -2,6 +2,8 @@
 
 PDF export plugin for documentation sites. Works with Fumadocs, Docusaurus, Nextra, and other frameworks.
 
+For some reason, Word/Powerpoint are the 'best' solution that billion dollar Fortune 500 companies offer for creating guides and procedures... Now we don't have to suffer anymore :) Write that beautiful article in whatever framework you want, export to PDF and be done with it. 
+
 <!--> Basic example <-->
 https://github.com/user-attachments/assets/a1e9c0bd-c67e-4b82-9cd0-83c75cdc4cf6
 
