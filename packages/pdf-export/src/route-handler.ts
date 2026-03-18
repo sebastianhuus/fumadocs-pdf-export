@@ -141,6 +141,7 @@ export function createPdfExportHandler(options?: PdfExportOptions | PresetName) 
         printBackground: true,
         margin: config.margins,
         preferCSSPageSize: false,
+        tagged: true,
       });
 
       await browser.close();
