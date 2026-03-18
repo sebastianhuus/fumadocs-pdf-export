@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import puppeteer from 'puppeteer';
+import { PDFDocument, PDFHexString, PDFName } from 'pdf-lib';
 import type { PdfExportOptions, PresetName } from './types.js';
 import { presets } from './types.js';
 
@@ -123,31 +124,51 @@ export function createPdfExportHandler(options?: PdfExportOptions | PresetName) 
         await page.evaluate(resolvedOptions.beforePdfGeneration);
       }
 
-      // Calculate content height
-      const contentHeight = await page.evaluate((selector) => {
+      // Extract headings and calculate content height
+      const { contentHeight, headings } = await page.evaluate((selector, marginTop) => {
         const content = document.querySelector(selector) as HTMLElement | null;
-        if (content) {
-          content.offsetHeight; // Force reflow
-          const rect = content.getBoundingClientRect();
-          return rect.height + 40;
-        }
-        return document.body.scrollHeight;
-      }, config.contentSelector);
+        const height = content
+          ? (content.offsetHeight, content.getBoundingClientRect().height + 40)
+          : document.body.scrollHeight;
+
+        const container = content || document.body;
+        const headingEls = container.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        const extracted: { text: string; level: number; top: number }[] = [];
+        headingEls.forEach((el) => {
+          const htmlEl = el as HTMLElement;
+          // Get only direct text content, ignoring icon/anchor child elements
+          const text = htmlEl.textContent?.replace(/\s+/g, ' ').trim() || '';
+          if (!text || text === '#') return;
+          // Skip headings that are hidden or zero-size
+          const rect = htmlEl.getBoundingClientRect();
+          if (rect.height === 0 || rect.width === 0) return;
+          const level = parseInt(el.tagName[1], 10);
+          extracted.push({ text, level, top: rect.top + (marginTop ?? 0) });
+        });
+
+        return { contentHeight: height, headings: extracted };
+      }, config.contentSelector, config.margins.top);
+
+      const totalHeight = contentHeight + 60;
 
       // Generate PDF
       const pdfBuffer = await page.pdf({
         width: config.pageWidth,
-        height: contentHeight + 60,
+        height: totalHeight,
         printBackground: true,
         margin: config.margins,
         preferCSSPageSize: false,
+        tagged: true,
       });
 
       await browser.close();
 
+      // Add PDF outline bookmarks from headings
+      const pdfWithOutline = await addPdfOutline(pdfBuffer, headings, totalHeight);
+
       const filename = path.replace(/\//g, '-').replace(/^-/, '') || 'document';
 
-      return new NextResponse(Buffer.from(pdfBuffer), {
+      return new NextResponse(Buffer.from(pdfWithOutline), {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename="${filename}.pdf"`,
@@ -437,4 +458,107 @@ async function cleanupPageForPdf(
   });
 
   await new Promise((resolve) => setTimeout(resolve, 100));
+}
+
+/**
+ * Add PDF outline (bookmarks) from extracted headings using pdf-lib
+ */
+async function addPdfOutline(
+  pdfBuffer: Uint8Array,
+  headings: { text: string; level: number; top: number }[],
+  pageHeight: number
+): Promise<Uint8Array> {
+  if (headings.length === 0) return pdfBuffer;
+
+  const pdfDoc = await PDFDocument.load(pdfBuffer);
+  const pages = pdfDoc.getPages();
+  if (pages.length === 0) return pdfBuffer;
+
+  const page = pages[0];
+  const pdfPageHeight = page.getHeight();
+
+  // pdf-lib doesn't have a high-level outline API, so we build the outline
+  // dictionary manually using the low-level PDF objects
+  const context = pdfDoc.context;
+
+  // Create outline item refs first so we can link siblings
+  const outlineItemRefs = headings.map(() => context.nextRef());
+  const outlineRef = context.nextRef();
+
+  // Build a tree structure from flat headings based on level
+  interface OutlineNode {
+    index: number;
+    children: OutlineNode[];
+  }
+
+  const root: OutlineNode = { index: -1, children: [] };
+  const stack: OutlineNode[] = [root];
+
+  for (let i = 0; i < headings.length; i++) {
+    const heading = headings[i];
+    const node: OutlineNode = { index: i, children: [] };
+
+    // Pop stack until we find a parent with a lower level
+    while (stack.length > 1) {
+      const parentIndex = stack[stack.length - 1].index;
+      if (parentIndex === -1 || headings[parentIndex].level < heading.level) break;
+      stack.pop();
+    }
+
+    stack[stack.length - 1].children.push(node);
+    stack.push(node);
+  }
+
+  // Recursively create outline dictionaries
+  function createOutlineItems(
+    children: OutlineNode[],
+    parentRef: ReturnType<typeof context.nextRef>
+  ) {
+    for (let i = 0; i < children.length; i++) {
+      const node = children[i];
+      const heading = headings[node.index];
+      const ref = outlineItemRefs[node.index];
+
+      // Convert browser top position to PDF y coordinate (PDF origin is bottom-left)
+      const yPos = pdfPageHeight - (heading.top / pageHeight) * pdfPageHeight;
+
+      const dict = context.obj({
+        Parent: parentRef,
+        Dest: [page.ref, 'XYZ', 0, yPos, null],
+      });
+      dict.set(PDFName.of('Title'), PDFHexString.fromText(heading.text));
+
+      if (i > 0) {
+        dict.set(PDFName.of('Prev'), outlineItemRefs[children[i - 1].index]);
+      }
+      if (i < children.length - 1) {
+        dict.set(PDFName.of('Next'), outlineItemRefs[children[i + 1].index]);
+      }
+
+      if (node.children.length > 0) {
+        dict.set(PDFName.of('First'), outlineItemRefs[node.children[0].index]);
+        dict.set(PDFName.of('Last'), outlineItemRefs[node.children[node.children.length - 1].index]);
+        dict.set(PDFName.of('Count'), context.obj(node.children.length));
+        createOutlineItems(node.children, ref);
+      }
+
+      context.assign(ref, dict);
+    }
+  }
+
+  createOutlineItems(root.children, outlineRef);
+
+  // Create the root outline dictionary
+  const outlineDict = context.obj({
+    Type: 'Outlines',
+    First: outlineItemRefs[root.children[0].index],
+    Last: outlineItemRefs[root.children[root.children.length - 1].index],
+    Count: root.children.length,
+  });
+  context.assign(outlineRef, outlineDict);
+
+  // Set the outline on the document catalog
+  pdfDoc.catalog.set(PDFName.of('Outlines'), outlineRef);
+
+  return pdfDoc.save();
 }

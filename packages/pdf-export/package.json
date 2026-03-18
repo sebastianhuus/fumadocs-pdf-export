@@ -43,17 +43,19 @@
   ],
   "peerDependencies": {
     "next": ">=14.0.0",
+    "puppeteer": ">=22.0.0",
     "react": ">=18.0.0",
-    "react-dom": ">=18.0.0",
-    "puppeteer": ">=22.0.0"
+    "react-dom": ">=18.0.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "pdf-lib": "^1.17.1"
+  },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "puppeteer": "^24.0.0",
     "next": "^15.0.0",
+    "puppeteer": "^24.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "^5.0.0"
