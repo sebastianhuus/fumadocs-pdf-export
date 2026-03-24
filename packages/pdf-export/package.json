@@ -1,6 +1,6 @@
 {
   "name": "fumadocs-pdf-export",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "PDF export plugin for Fumadocs documentation sites",
   "homepage": "https://github.com/sebastianhuus/fumadocs-pdf-export",
   "license": "MIT",
