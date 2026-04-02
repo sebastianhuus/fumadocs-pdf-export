@@ -10,6 +10,8 @@ PDF export plugin for documentation sites. Works with Fumadocs, Docusaurus, Next
 - Cookie forwarding for authenticated pages
 - Configurable selectors for different frameworks
 - Pre-built presets for popular doc frameworks
+- **CLI for pre-rendering PDFs** at build time (no runtime Chromium needed)
+- **Manifest-based static serving** — works on Vercel, Netlify, any static host
 
 ## Installation
 
@@ -128,6 +130,96 @@ const nextConfig = {
 
 module.exports = nextConfig;
 ```
+
+## Static PDF Generation (CLI)
+
+For platforms that can't run Chromium at runtime (Vercel, Netlify, etc.), you can pre-render PDFs at build time and serve them as static files.
+
+### 1. Generate PDFs locally
+
+Start your dev server, then run the CLI:
+
+```bash
+# Discover pages from sitemap.xml
+npx fumadocs-pdf generate --url http://localhost:3000 --sitemap
+
+# Or specify pages explicitly
+npx fumadocs-pdf generate --url http://localhost:3000 --paths /docs,/docs/getting-started,/docs/api
+```
+
+This outputs PDFs and a `manifest.json` to `./public/pdfs/` (configurable with `--out`).
+
+**Tip:** Add a script to your `package.json` for convenience:
+
+```json
+{
+  "scripts": {
+    "generate:pdfs": "fumadocs-pdf generate --url http://localhost:3000 --sitemap"
+  }
+}
+```
+
+Then run with `pnpm generate:pdfs` (or `npm run generate:pdfs`).
+
+### 2. Use the manifest-based ExportButton
+
+```tsx
+// Static PDFs only (hides button if no PDF available)
+<FumadocsExportButton
+  manifestPath="/pdfs/manifest.json"
+  apiPath={null}
+  hideWhenUnavailable
+/>
+
+// Static with live fallback (tries manifest first)
+<FumadocsExportButton manifestPath="/pdfs/manifest.json" />
+
+// Live only (existing behavior, unchanged)
+<FumadocsExportButton />
+```
+
+### 3. Automate with GitHub Actions
+
+Add this workflow to regenerate PDFs on every push:
+
+```yaml
+# .github/workflows/generate-pdfs.yml
+name: Generate PDFs
+on:
+  push:
+    branches: [main]
+    paths: ['content/**']
+
+jobs:
+  pdfs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm build
+      - run: pnpm start &
+      - run: sleep 5
+      - run: npx fumadocs-pdf generate --url http://localhost:3000 --sitemap
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: update generated PDFs'
+          file_pattern: 'public/pdfs/*'
+```
+
+### CLI Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--url <url>` | (required) | Base URL of the running dev server |
+| `--out <dir>` | `./public/pdfs` | Output directory for PDFs and manifest |
+| `--preset <name>` | `fumadocs` | Preset: `fumadocs`, `docusaurus`, `nextra` |
+| `--paths <paths>` | - | Comma-separated list of URL paths to export |
+| `--sitemap` | - | Discover pages from `/sitemap.xml` |
 
 ## Configuration
 
@@ -266,7 +358,9 @@ Creates a Next.js API route handler for PDF generation.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `apiPath` | `string` | `'/api/export-pdf'` | API endpoint path |
+| `apiPath` | `string \| null` | `'/api/export-pdf'` | API endpoint for live generation. Set to `null` to disable |
+| `manifestPath` | `string` | - | Path to `manifest.json` for static PDFs |
+| `hideWhenUnavailable` | `boolean` | `false` | Hide button when no PDF exists (manifest-only mode) |
 | `className` | `string` | - | CSS classes |
 | `children` | `ReactNode` | - | Button content |
 | `title` | `string` | `'Export as PDF'` | Button tooltip |
