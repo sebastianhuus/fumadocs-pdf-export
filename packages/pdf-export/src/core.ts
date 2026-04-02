@@ -327,10 +327,22 @@ async function cleanupPageForPdf(page: PuppeteerPage, config: ResolvedConfig) {
       });
 
       // Expand code blocks: remove scroll constraints and wrap long lines
+      // Target the Fumadocs code block structure: figure.shiki > div[overflow-auto, max-h] > pre > code
+      contentClone.querySelectorAll('figure.shiki').forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        htmlEl.style.overflow = 'visible';
+      });
+      contentClone.querySelectorAll('figure.shiki > div').forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        htmlEl.style.overflow = 'visible';
+        htmlEl.style.maxHeight = 'none';
+      });
       contentClone.querySelectorAll('pre').forEach((el) => {
         const htmlEl = el as HTMLElement;
         htmlEl.style.overflow = 'visible';
         htmlEl.style.maxHeight = 'none';
+        htmlEl.style.maxWidth = '100%';
+        htmlEl.style.width = '100%';
         htmlEl.style.whiteSpace = 'pre-wrap';
         htmlEl.style.wordWrap = 'break-word';
         htmlEl.style.overflowWrap = 'break-word';
