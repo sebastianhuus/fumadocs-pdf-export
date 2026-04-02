@@ -324,6 +324,10 @@ async function cleanupPageForPdf(page: PuppeteerPage, config: ResolvedConfig) {
         if (style.overflow === 'hidden' || style.overflowY === 'hidden' || style.overflowX === 'hidden') {
           htmlEl.style.overflow = 'visible';
         }
+        // Strip shadows from all elements — they render poorly in PDFs
+        if (style.boxShadow && style.boxShadow !== 'none') {
+          htmlEl.style.boxShadow = 'none';
+        }
       });
 
       // Expand code blocks: remove scroll constraints and wrap long lines
@@ -331,7 +335,6 @@ async function cleanupPageForPdf(page: PuppeteerPage, config: ResolvedConfig) {
       contentClone.querySelectorAll('figure.shiki').forEach((el) => {
         const htmlEl = el as HTMLElement;
         htmlEl.style.overflow = 'visible';
-        htmlEl.style.boxShadow = 'none';
       });
       contentClone.querySelectorAll('figure.shiki > div').forEach((el) => {
         const htmlEl = el as HTMLElement;
