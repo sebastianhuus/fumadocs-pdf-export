@@ -400,6 +400,21 @@ async function cleanupPageForPdf(page: PuppeteerPage, config: ResolvedConfig) {
         htmlEl.style.height = 'auto';
       });
 
+      // Disable all page-break rules — the PDF is a single continuous page
+      const noBreaks = document.createElement('style');
+      noBreaks.textContent = `
+        @page { margin: 0 !important; }
+        * {
+          break-before: auto !important;
+          break-after: auto !important;
+          break-inside: auto !important;
+          page-break-before: auto !important;
+          page-break-after: auto !important;
+          page-break-inside: auto !important;
+        }
+      `;
+      document.head.appendChild(noBreaks);
+
       contentClone.style.marginTop = '0';
       contentClone.style.paddingTop = '0';
 
