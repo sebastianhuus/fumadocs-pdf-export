@@ -266,7 +266,7 @@ async function triggerLazyImages(page: PuppeteerPage) {
  */
 async function cleanupPageForPdf(page: PuppeteerPage, config: ResolvedConfig) {
   await page.evaluate(
-    (contentSelector, removeSelectors, accordionContentSelectors, pageWidth) => {
+    (contentSelector, removeSelectors, accordionContentSelectors) => {
       const content = document.querySelector(contentSelector);
       if (!content) return;
 
@@ -403,7 +403,6 @@ async function cleanupPageForPdf(page: PuppeteerPage, config: ResolvedConfig) {
       // Disable all page-break rules — the PDF is a single continuous page
       const noBreaks = document.createElement('style');
       noBreaks.textContent = `
-        @page { size: ${pageWidth}px 99999px !important; }
         * {
           break-before: auto !important;
           break-after: auto !important;
@@ -413,6 +412,27 @@ async function cleanupPageForPdf(page: PuppeteerPage, config: ResolvedConfig) {
           page-break-inside: auto !important;
         }
       `;
+
+      // Remove any @page rules from existing stylesheets so page.pdf() controls dimensions
+      for (const sheet of Array.from(document.styleSheets)) {
+        try {
+          const rules = sheet.cssRules;
+          for (let i = rules.length - 1; i >= 0; i--) {
+            const rule = rules[i];
+            if (rule instanceof CSSPageRule) {
+              sheet.deleteRule(i);
+            } else if (rule instanceof CSSMediaRule && rule.conditionText === 'print') {
+              for (let j = rule.cssRules.length - 1; j >= 0; j--) {
+                if (rule.cssRules[j] instanceof CSSPageRule) {
+                  rule.deleteRule(j);
+                }
+              }
+            }
+          }
+        } catch (_) {
+          // Cross-origin stylesheets may throw — skip them
+        }
+      }
       document.head.appendChild(noBreaks);
 
       contentClone.style.marginTop = '0';
@@ -426,8 +446,7 @@ async function cleanupPageForPdf(page: PuppeteerPage, config: ResolvedConfig) {
     },
     config.contentSelector,
     config.removeSelectors,
-    config.accordionContentSelectors,
-    config.pageWidth
+    config.accordionContentSelectors
   );
 
   // Scroll through the cleaned page to force the browser to paint all elements
