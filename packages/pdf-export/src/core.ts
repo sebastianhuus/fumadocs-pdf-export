@@ -400,6 +400,41 @@ async function cleanupPageForPdf(page: PuppeteerPage, config: ResolvedConfig) {
         htmlEl.style.height = 'auto';
       });
 
+      // Disable all page-break rules — the PDF is a single continuous page
+      const noBreaks = document.createElement('style');
+      noBreaks.textContent = `
+        * {
+          break-before: auto !important;
+          break-after: auto !important;
+          break-inside: auto !important;
+          page-break-before: auto !important;
+          page-break-after: auto !important;
+          page-break-inside: auto !important;
+        }
+      `;
+
+      // Remove any @page rules from existing stylesheets so page.pdf() controls dimensions
+      for (const sheet of Array.from(document.styleSheets)) {
+        try {
+          const rules = sheet.cssRules;
+          for (let i = rules.length - 1; i >= 0; i--) {
+            const rule = rules[i];
+            if (rule instanceof CSSPageRule) {
+              sheet.deleteRule(i);
+            } else if (rule instanceof CSSMediaRule && rule.conditionText === 'print') {
+              for (let j = rule.cssRules.length - 1; j >= 0; j--) {
+                if (rule.cssRules[j] instanceof CSSPageRule) {
+                  rule.deleteRule(j);
+                }
+              }
+            }
+          }
+        } catch (_) {
+          // Cross-origin stylesheets may throw — skip them
+        }
+      }
+      document.head.appendChild(noBreaks);
+
       contentClone.style.marginTop = '0';
       contentClone.style.paddingTop = '0';
 
