@@ -54,6 +54,10 @@
     --fd-sidebar-width: 0px !important;
   }
 
+  #nd-page {
+    display: block !important;
+  }
+
   #nd-sidebar,
   #nd-toc,
   nav,
