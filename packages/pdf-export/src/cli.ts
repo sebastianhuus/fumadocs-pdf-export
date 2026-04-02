@@ -11,6 +11,7 @@ interface CliOptions {
   preset?: PresetName;
   paths?: string[];
   sitemap?: boolean;
+  cookies?: { name: string; value: string }[];
 }
 
 function printUsage(): void {
@@ -23,11 +24,12 @@ Options:
   --preset <name>    Preset: fumadocs, docusaurus, nextra (default: fumadocs)
   --paths <paths>    Comma-separated list of paths to export
   --sitemap          Discover pages from /sitemap.xml
+  --cookies <cookies> Cookies to send with each request (format: "name=value; name2=value2")
 
 Examples:
   fumadocs-pdf generate --url http://localhost:3000 --sitemap
   fumadocs-pdf generate --url http://localhost:3000 --paths /docs/getting-started,/docs/api
-  fumadocs-pdf generate --url http://localhost:3000 --sitemap --out ./public/pdfs --preset fumadocs
+  fumadocs-pdf generate --url http://localhost:3000 --sitemap --out ./pdfs --cookies "session=abc123"
 `);
 }
 
@@ -40,6 +42,7 @@ function parseArgs(args: string[]): CliOptions | null {
   let preset: PresetName | undefined = 'fumadocs';
   let paths: string[] | undefined;
   let sitemap = false;
+  let cookies: { name: string; value: string }[] | undefined;
 
   for (let i = startIdx; i < args.length; i++) {
     const arg = args[i];
@@ -58,6 +61,14 @@ function parseArgs(args: string[]): CliOptions | null {
         break;
       case '--sitemap':
         sitemap = true;
+        break;
+      case '--cookies':
+        cookies = (args[++i] || '').split(';').map((c) => {
+          const trimmed = c.trim();
+          const eqIdx = trimmed.indexOf('=');
+          if (eqIdx === -1) return null;
+          return { name: trimmed.slice(0, eqIdx).trim(), value: trimmed.slice(eqIdx + 1).trim() };
+        }).filter((c): c is { name: string; value: string } => c !== null && c.name.length > 0);
         break;
       case '--help':
       case '-h':
@@ -82,7 +93,7 @@ function parseArgs(args: string[]): CliOptions | null {
     return null;
   }
 
-  return { url: url.replace(/\/$/, ''), outDir, preset, paths, sitemap };
+  return { url: url.replace(/\/$/, ''), outDir, preset, paths, sitemap, cookies };
 }
 
 /**
@@ -155,6 +166,13 @@ async function main(): Promise<void> {
   const config = resolveConfig(options.preset);
   const outDir = resolve(process.cwd(), options.outDir);
 
+  // Build Puppeteer cookies with the base URL
+  const puppeteerCookies = options.cookies?.map((c) => ({
+    name: c.name,
+    value: c.value,
+    url: options.url,
+  }));
+
   // Ensure output directory exists
   if (!existsSync(outDir)) {
     mkdirSync(outDir, { recursive: true });
@@ -172,7 +190,9 @@ async function main(): Promise<void> {
     console.log(`\n[${i + 1}/${paths.length}] Generating PDF for ${pagePath}...`);
 
     try {
-      const pdfBytes = await generatePdf(pageUrl, config);
+      const pdfBytes = await generatePdf(pageUrl, config, {
+        cookies: puppeteerCookies,
+      });
       const outputPath = join(outDir, `${filename}.pdf`);
       writeFileSync(outputPath, Buffer.from(pdfBytes));
 

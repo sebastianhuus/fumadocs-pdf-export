@@ -220,6 +220,37 @@ jobs:
 | `--preset <name>` | `fumadocs` | Preset: `fumadocs`, `docusaurus`, `nextra` |
 | `--paths <paths>` | - | Comma-separated list of URL paths to export |
 | `--sitemap` | - | Discover pages from `/sitemap.xml` |
+| `--cookies <cookies>` | - | Cookies to send with each request (`"name=value; name2=value2"`) |
+
+### Authenticated / Internal Sites
+
+By default, PDFs are written to `./public/pdfs/` which is publicly accessible. For internal sites with authentication, output to a non-public directory and serve via an authenticated API route:
+
+```bash
+fumadocs-pdf generate --url http://localhost:3000 --sitemap --out ./pdfs --cookies "session=abc123"
+```
+
+Then create an API route that checks auth before serving:
+
+```typescript
+// app/api/pdfs/[slug]/route.ts
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+export async function GET(request: Request, { params }: { params: { slug: string } }) {
+  // Your auth check here
+  const pdf = readFileSync(join(process.cwd(), 'pdfs', `${params.slug}.pdf`));
+  return new Response(pdf, {
+    headers: { 'Content-Type': 'application/pdf' },
+  });
+}
+```
+
+Point the button at the API route instead of using manifest mode:
+
+```tsx
+<ExportButton apiPath="/api/pdfs" />
+```
 
 ## Configuration
 
