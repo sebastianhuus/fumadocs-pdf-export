@@ -403,6 +403,7 @@ async function cleanupPageForPdf(page: PuppeteerPage, config: ResolvedConfig) {
       // Disable all page-break rules — the PDF is a single continuous page
       const noBreaks = document.createElement('style');
       noBreaks.textContent = `
+        @page { size: 99999px !important; }
         * {
           break-before: auto !important;
           break-after: auto !important;
