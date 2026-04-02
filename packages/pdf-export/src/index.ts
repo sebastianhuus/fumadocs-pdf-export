@@ -1,6 +1,9 @@
 // Route handler
 export { createPdfExportHandler } from './route-handler.js';
 
+// Core (for programmatic use)
+export { generatePdf, resolveConfig } from './core.js';
+
 // Components
 export { ExportButton, FumadocsExportButton } from './components/index.js';
 
