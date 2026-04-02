@@ -26,6 +26,12 @@
     break-inside: avoid;
   }
 
+  /* Keep headings with their following content */
+  h1, h2, h3, h4, h5, h6 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
   /* Remove excessive margins in print */
   h1, h2, h3, h4, h5, h6 {
     margin-top: 1em !important;
@@ -71,6 +77,14 @@
   .nextra-toc,
   .nextra-breadcrumb {
     display: none !important;
+  }
+
+  /* ================================================
+   * Fumadocs callout containers
+   * ================================================ */
+  div:has(> div[role='none']) {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   /* ================================================
@@ -147,6 +161,8 @@
 
   img {
     max-width: 100% !important;
+    max-height: 70vh !important;
+    object-fit: contain !important;
     page-break-inside: avoid !important;
   }
 

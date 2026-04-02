@@ -417,6 +417,26 @@ Import in your global CSS:
 @import 'fumadocs-pdf-export/styles/print.css';
 ```
 
+## Fixing Page Break Issues
+
+The built-in print styles handle headings, images, code blocks, blockquotes, and Fumadocs callouts. If you have custom components that break across pages, add `break-inside: avoid` in your own CSS:
+
+```css
+@media print {
+  /* Prevent your custom component from splitting across pages */
+  .my-component {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+```
+
+Common causes of unwanted page breaks:
+
+- **Custom card/callout components** — any container with a visible border or background will look broken when split across pages. Fix with `break-inside: avoid`.
+- **Step/timeline components** — project-specific step containers (e.g. `.fes-step`) need `break-inside: avoid` added in your local CSS.
+- **Tall elements** — `break-inside: avoid` on a very tall element will push it to the next page entirely, potentially leaving a large gap. If the element can be taller than a page, don't use `break-inside: avoid` on it — let it split naturally.
+
 ## Troubleshooting
 
 ### Puppeteer fails to launch
