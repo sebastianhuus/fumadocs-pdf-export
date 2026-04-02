@@ -321,9 +321,25 @@ async function cleanupPageForPdf(page: PuppeteerPage, config: ResolvedConfig) {
         if (style.position === 'fixed' || style.position === 'sticky') {
           htmlEl.style.position = 'static';
         }
-        if (style.overflow === 'hidden' || style.overflowY === 'hidden') {
+        if (style.overflow === 'hidden' || style.overflowY === 'hidden' || style.overflowX === 'hidden') {
           htmlEl.style.overflow = 'visible';
         }
+      });
+
+      // Expand code blocks: remove scroll constraints and wrap long lines
+      contentClone.querySelectorAll('pre').forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        htmlEl.style.overflow = 'visible';
+        htmlEl.style.maxHeight = 'none';
+        htmlEl.style.whiteSpace = 'pre-wrap';
+        htmlEl.style.wordWrap = 'break-word';
+        htmlEl.style.overflowWrap = 'break-word';
+      });
+      contentClone.querySelectorAll('pre code').forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        htmlEl.style.whiteSpace = 'pre-wrap';
+        htmlEl.style.wordWrap = 'break-word';
+        htmlEl.style.overflowWrap = 'break-word';
       });
 
       contentClone.querySelectorAll('[data-state="open"], [data-state="closed"]').forEach((el) => {
