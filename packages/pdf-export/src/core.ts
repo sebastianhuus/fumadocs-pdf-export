@@ -266,7 +266,7 @@ async function triggerLazyImages(page: PuppeteerPage) {
  */
 async function cleanupPageForPdf(page: PuppeteerPage, config: ResolvedConfig) {
   await page.evaluate(
-    (contentSelector, removeSelectors, accordionContentSelectors) => {
+    (contentSelector, removeSelectors, accordionContentSelectors, pageWidth) => {
       const content = document.querySelector(contentSelector);
       if (!content) return;
 
@@ -403,7 +403,7 @@ async function cleanupPageForPdf(page: PuppeteerPage, config: ResolvedConfig) {
       // Disable all page-break rules — the PDF is a single continuous page
       const noBreaks = document.createElement('style');
       noBreaks.textContent = `
-        @page { size: 99999px !important; }
+        @page { size: ${pageWidth}px 99999px !important; }
         * {
           break-before: auto !important;
           break-after: auto !important;
@@ -426,7 +426,8 @@ async function cleanupPageForPdf(page: PuppeteerPage, config: ResolvedConfig) {
     },
     config.contentSelector,
     config.removeSelectors,
-    config.accordionContentSelectors
+    config.accordionContentSelectors,
+    config.pageWidth
   );
 
   // Scroll through the cleaned page to force the browser to paint all elements
