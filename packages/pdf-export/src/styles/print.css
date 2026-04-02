@@ -21,9 +21,16 @@
   h1, h2, h3, h4, h5, h6,
   pre, code,
   img,
+  figure,
   blockquote {
     page-break-inside: avoid;
     break-inside: avoid;
+  }
+
+  /* Keep figures (code blocks, etc.) attached to their introductory content */
+  figure {
+    break-before: avoid;
+    page-break-before: avoid;
   }
 
   /* Keep headings with their following content */
