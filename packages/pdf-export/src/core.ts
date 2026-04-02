@@ -331,6 +331,7 @@ async function cleanupPageForPdf(page: PuppeteerPage, config: ResolvedConfig) {
       contentClone.querySelectorAll('figure.shiki').forEach((el) => {
         const htmlEl = el as HTMLElement;
         htmlEl.style.overflow = 'visible';
+        htmlEl.style.boxShadow = 'none';
       });
       contentClone.querySelectorAll('figure.shiki > div').forEach((el) => {
         const htmlEl = el as HTMLElement;
@@ -410,12 +411,22 @@ async function cleanupPageForPdf(page: PuppeteerPage, config: ResolvedConfig) {
     config.accordionContentSelectors
   );
 
-  await page.evaluate(() => {
+  // Scroll through the cleaned page to force the browser to paint all elements
+  await page.evaluate(async () => {
+    const distance = 400;
+    let totalHeight = 0;
+    const scrollHeight = document.body.scrollHeight;
+    while (totalHeight < scrollHeight + 500) {
+      window.scrollBy(0, distance);
+      totalHeight += distance;
+      await new Promise((r) => setTimeout(r, 50));
+    }
     window.scrollTo(0, 0);
+    // Force a final reflow
     document.body.offsetHeight;
   });
 
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  await new Promise((resolve) => setTimeout(resolve, 200));
 }
 
 /**
